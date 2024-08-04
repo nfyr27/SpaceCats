@@ -79,6 +79,13 @@ text_number = 0
 start_time = 0
 font1 = pg.font.Font("шрифт.otf", 25)
 
+pg.mixer.music.load("музыка.wav")
+pg.mixer.music.set_volume(0.2)
+pg.mixer.music.play()
+
+laser_sound = pg.mixer.Sound("звук лазера.wav")
+win_sound = pg.mixer.Sound("звук победы.wav")
+
 while is_running:
 
     # СОБЫТИЯ
@@ -104,6 +111,7 @@ while is_running:
             if mode == "moon":
                 if event.key == pg.K_SPACE:
                     lasers.add(Laser(starship.rect.midtop))
+                    laser_sound.play()
 
             if mode == "final_scene":
                 text_number += 2
@@ -118,7 +126,7 @@ while is_running:
         dialogue_mode(captain, start_text)
 
     if mode == "meteorites":
-        if time.time() - start_time > 5.0:
+        if time.time() - start_time > 20.0:
             mode = "alien_scene"
 
         if random.randint(1, 50) == 1:
@@ -126,7 +134,6 @@ while is_running:
 
         starship.update()
         meteorites.update()
-        lasers.update()
 
         hits = pg.sprite.spritecollide(starship, meteorites, True)
         for hit in hits:
@@ -134,7 +141,6 @@ while is_running:
             if heart_count <= 0:
                 is_running = False
 
-        hits = pg.sprite.groupcollide(lasers, mice, True, True)
 
         screen.blit(background, (0, 0))
         screen.blit(starship.image, starship.rect)
@@ -150,20 +156,28 @@ while is_running:
     if mode == "moon":
         if time.time() - start_time > 20.0:
             mode = "final_scene"
+            pg.mixer.music.fadeout(3000)
+            win_sound.play()
 
         if random.randint(1, 50) == 1:
             mice.add(Mouse_starship())
+
         starship.update()
         mice.update()
+        lasers.update()
 
         hits = pg.sprite.spritecollide(starship, mice, True)
         for hit in hits:
             heart_count -= 1
             if heart_count <= 0:
                 is_running = False
+
+        hits = pg.sprite.groupcollide(lasers, mice, True, True)
+
         screen.blit(background, (0, 0))
         screen.blit(starship.image, starship.rect)
         mice.draw(screen)
+        lasers.draw(screen)
 
         for i in range(heart_count):
             screen.blit(heart, (i * 30, 0))
